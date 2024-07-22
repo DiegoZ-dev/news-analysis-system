@@ -22,3 +22,32 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+/.metadata/
+
+
+/target
+/log
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+##############################
+## Eclipse
+##############################
+/.settings
+/src/test
+/bin
+/tmp
+.metadata
+.classpath
+.project
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.factorypath
+/.idea
+.project
