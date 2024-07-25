@@ -27,34 +27,41 @@ public class NewsCrawler {
             Path directory = Paths.get(csvFolder).toAbsolutePath().normalize();
             if (!Files.exists(directory)) {
                 Files.createDirectories(directory);
-                logger.info("Directorio creado en: " + directory.toString());
+                logger.info("Directorio creado en: {}", directory);
             } else {
-                logger.info("El directorio ya existe en: " + directory.toString());
+                logger.info("El directorio ya existe en: {}", directory);
             }
 
             // Preparar la ruta completa al archivo CSV
             Path filePath = Paths.get(csvFolder, csvFile).toAbsolutePath().normalize();
-            logger.info("El archivo se guardará en: " + filePath.toString());
+            logger.info("El archivo se guardará en: {}", filePath);
 
             // Preparar el archivo CSV para escritura
             try (CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath.toString()))) {
                 Document doc = Jsoup.connect(url).get();
-                Elements articles = doc.select("div.mod-description");
+                Elements grillArticlesGames = doc.select("div.row-gap-tablet-3");
+                Elements articlesGames = grillArticlesGames.select("article.mod-article");
 
                 // Escribir encabezados al archivo CSV
-                String[] headers = {"titulo", "cuerpo"};
+                String[] headers = {"titulo","link","cuerpo"};
                 csvWriter.writeNext(headers);
-
+                logger.info("Añadiendo los headers: '{}' al archivo {}", headers,csvFile);
                 // Iterar sobre los artículos y escribir los datos al CSV
-                for (Element article : articles) {
-                    String title = article.select("h2").text(); // Suponiendo que el título está en un <h2>
-                    String body = article.select("p").text(); // Suponiendo que el cuerpo está en un <p>
+                for (Element article : articlesGames) {
+                    Elements txtLink = article.select("h2.com-title.--font-primary.--l.--font-medium");
+                    String link = "https://www.lanacion.com.ar"+txtLink.select("a.com-link").attr("href");
 
-                    String[] data = {title, body};
+                    logger.info("Entrando a la noticia del link {}",link);
+                    Document news = Jsoup.connect(link).get();
+                    String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text(); // Suponiendo que el título está en un <h2>
+                    String cuerpo = news.select("p").text(); // Suponiendo que el cuerpo está en un <p>
+
+                    String[] data = {title,link,cuerpo};
                     csvWriter.writeNext(data);
+                    logger.info("Añadiendo los datos al archivo {}",csvFile);
                 }
 
-                logger.info("Datos guardados en {}", filePath.toString());
+                logger.info("Datos guardados en {}", filePath);
             }
         } catch (IOException e) {
             logger.error("Error al escribir en el archivo CSV", e);
