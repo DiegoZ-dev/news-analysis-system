@@ -39,8 +39,7 @@ public class NewsCrawler {
             // Preparar el archivo CSV para escritura
             try (CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath.toString()))) {
                 Document doc = Jsoup.connect(url).get();
-                Elements grillArticlesGames = doc.select("div.row-gap-tablet-3");
-                Elements articlesGames = grillArticlesGames.select("article.mod-article");
+                Elements articlesGames = doc.select("div.row-gap-tablet-3").select("section.mod-description");
 
                 // Escribir encabezados al archivo CSV
                 String[] headers = {"titulo","link","cuerpo"};
@@ -48,17 +47,22 @@ public class NewsCrawler {
                 logger.info("Añadiendo los headers: '{}' al archivo {}", headers,csvFile);
                 // Iterar sobre los artículos y escribir los datos al CSV
                 for (Element article : articlesGames) {
-                    Elements txtLink = article.select("h2.com-title.--font-primary.--l.--font-medium");
-                    String link = "https://www.lanacion.com.ar"+txtLink.select("a.com-link").attr("href");
+                    if(article.select("span.badge.--sixxs.--arial.com-label.--exclusive-ln").isEmpty()) {
+                        Elements txtLink = article.select("h2.com-title.--font-primary.--l.--font-medium");
+                        String link = "https://www.lanacion.com.ar" + txtLink.select("a.com-link").attr("href");
 
-                    logger.info("Entrando a la noticia del link {}",link);
-                    Document news = Jsoup.connect(link).get();
-                    String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text(); // Suponiendo que el título está en un <h2>
-                    String cuerpo = news.select("p").text(); // Suponiendo que el cuerpo está en un <p>
+                        logger.info("Entrando a la noticia del link {}", link);
+                        Document news = Jsoup.connect(link).get();
+                        String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text(); // Suponiendo que el título está en un <h2>
+                        Elements parrafos = news.select("p.com-paragraph.--s");
+                        String cuerpo = parrafos.text(); // Suponiendo que el cuerpo está en un <p>
 
-                    String[] data = {title,link,cuerpo};
-                    csvWriter.writeNext(data);
-                    logger.info("Añadiendo los datos al archivo {}",csvFile);
+                        String[] data = {title, link, cuerpo};
+                        csvWriter.writeNext(data);
+                        logger.info("Añadiendo los datos al archivo {}", csvFile);
+                    }
+                    else
+                        logger.info("Se detectó una noticia exclusiva para miembros. Se saltea la noticia.");
                 }
 
                 logger.info("Datos guardados en {}", filePath);
