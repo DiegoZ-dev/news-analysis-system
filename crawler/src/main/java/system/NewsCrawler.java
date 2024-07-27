@@ -96,10 +96,12 @@ public class NewsCrawler {
 
                         logger.info("Entrando a la noticia del link {}", link);
                         Document news = Jsoup.connect(link).get();
+
                         String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text();
                         Elements parrafos = news.select("p.com-paragraph.--s");
                         String cuerpo = parrafos.text();
                         String[] data = { title, link, cuerpo };
+
                         csvWriter.writeNext(data);
                         logger.info("Añadiendo los datos al archivo {}", csvFile);
                     } else {
