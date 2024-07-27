@@ -98,7 +98,7 @@ public class NewsCrawler {
                         Document news = Jsoup.connect(link).get();
 
                         String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text();
-                        Elements parrafos = news.select("p.com-paragraph.--s");
+                        Elements parrafos = news.select("p.com-paragraph.--s,h2.com-title.--font-primary.--xl.--font-extra");
                         String cuerpo = parrafos.text();
                         String[] data = { title, link, cuerpo };
 
