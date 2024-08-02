@@ -10,7 +10,6 @@ import org.jsoup.select.Elements;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -30,7 +29,7 @@ public class NewsCrawler {
         String csvFolder = "../data/raw"; // Nombre de la carpeta donde se guardará el archivo CSV
         String csvFile = "news.csv"; // Nombre del archivo CSV donde se guardarán las noticias
 
-        WebDriverManager.chromedriver().driverVersion("127.0.0").setup();
+        WebDriverManager.chromedriver().driverVersion("127.0.6533.72").setup();
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--lang=en");
         options.addArguments("--headless");
@@ -58,10 +57,10 @@ public class NewsCrawler {
                 // Escribir encabezados al archivo CSV
                 String[] headers = { "titulo", "link", "cuerpo" };
                 csvWriter.writeNext(headers);
-                logger.info("Añadiendo los headers: '{}' al archivo {}", (Object) headers, csvFile);
+                logger.info("Añadiendo los headers: '{}' al archivo {}",headers, csvFile);
 
-                // Clic en el botón "Cargar más" un número fijo de veces
-                int maxClicks = 5; // Cambia este valor según tus necesidades
+                // Clic en el botón 'Cargar más' un número fijo de veces
+                int maxClicks = 1000; // Cambia este valor según tus necesidades
                 for (int clickCount = 0; clickCount < maxClicks; clickCount++) {
                     // Intentar encontrar el botón "Cargar más" y hacer clic
                     List<WebElement> loadMoreButtons = driver.findElements(By.cssSelector("button.com-button.--secondary"));
@@ -70,16 +69,16 @@ public class NewsCrawler {
                         break; // Salir si no hay más botón
                     } else {
                         // Desplazarse a la vista del botón
-                        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", loadMoreButtons.get(0));
+                        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", loadMoreButtons.getFirst());
 
                         // Hacer clic en el botón
-                        loadMoreButtons.get(0).click();
+                        loadMoreButtons.getFirst().click();
                         logger.info("Haciendo clic en el botón 'Cargar más'. Click número: {}", clickCount + 1);
                         // Esperar 2 segundos para que se carguen más noticias
                         try {
-                            Thread.sleep(2000); // Espera de 2 segundos
+                            Thread.sleep(5000); // Espera de 5 segundos
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            logger.info("No se pudo ejecutar Sleep");
                         }
                     }
                 }
@@ -98,7 +97,7 @@ public class NewsCrawler {
                         Document news = Jsoup.connect(link).get();
 
                         String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text();
-                        Elements parrafos = news.select("p.com-paragraph.--s,h2.com-title.--font-primary.--xl.--font-extra");
+                        Elements parrafos = news.select("p.com-paragraph.--s");
                         String cuerpo = parrafos.text();
                         String[] data = { title, link, cuerpo };
 
