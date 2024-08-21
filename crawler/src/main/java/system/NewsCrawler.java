@@ -1,34 +1,19 @@
 package system;
 
-<<<<<<< HEAD
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.opencsv.CSVWriter;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-=======
->>>>>>> f96441f (Se numeran las noticias en los logs, se añade uso de esperas explicitas de selenium, se añade un makefile para correr el crawler y el notebook de analisis)
 import java.io.FileWriter;
 import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import java.time.Duration;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -37,6 +22,9 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +82,7 @@ public class NewsCrawler {
 						wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".loading-spinner")));
 					} catch (Exception e) {
 						logger.info("No se encontró el botón 'Cargar más'. Finalizando la carga de resultados.");
-						exist = false;
+						exist=false;
 					}
 				}
 
