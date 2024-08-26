@@ -15,7 +15,6 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -72,8 +71,7 @@ public class NewsCrawler {
             exist = false; // Salir si no hay más botón
           } else {
             // Desplazarse a la vista del botón
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);",
-                loadMoreButtons.getFirst());
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", loadMoreButtons.getFirst());
 
             // Hacer clic en el botón
             loadMoreButtons.getFirst().click();
@@ -119,8 +117,7 @@ public class NewsCrawler {
     } catch (TimeoutException time) {
       logger.error("Se agotó el tiempo de espera del servidor.");
     } catch (StaleElementReferenceException e) {
-      logger.error(
-          "El botón se movió de lugar o no se alcanzó a presionar el botón con el tiempo disponible para cargar el botón");
+      logger.error("El botón se movió de lugar o no se alcanzó a presionar el botón con el tiempo disponible para cargar el botón");
     } finally {
       // Cerrar el navegador
       driver.quit();
