@@ -60,13 +60,14 @@ public class NewsCrawler {
 			Path filePath = Paths.get(csvFolder, csvFile).toAbsolutePath().normalize();
 			logger.info("El archivo se guardará en: {}", filePath);
 
-			try (CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath.toString()))) {
-				driver.get(url);
-
+            // Preparar el archivo CSV para escritura
+            try (CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath.toString()))) {
+                // Navegar a la página
+                logger.info("Conectandose a la página");
+                driver.get(url);
 				String[] headers = { "titulo", "link", "cuerpo" };
 				csvWriter.writeNext(headers);
 				logger.info("Añadiendo los headers: '{}' al archivo {}", headers, csvFile);
-
 				WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 				int maxClicks = 1000;
                 boolean exist = true;
