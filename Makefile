@@ -7,5 +7,4 @@ run_java:
 
 run_notebook:
 	@echo "Ejecutando notebook Jupyter..."
-	@jupyter-nbconvert --to script python-etl/transform_data.ipynb
-	@python python-etl/transform_data.py
+	@jupyter nbconvert --to notebook --execute --inplace python-etl/transform_data.ipynb
