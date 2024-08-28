@@ -3,7 +3,7 @@ run: run_java run_notebook
 run_java:
 	@echo "Ejecutando código Java con Maven..."
 	@mvn -f crawler/pom.xml clean compile
-	@mvn -f crawler/pom.xml exec:java -Dexec.mainClass="system.NewsCrawler"
+	@mvn -f crawler/pom.xml exec:java -Dexec.mainClass="system.NewsCrawler" -Dexec.workingdir="$(pwd)/crawler"
 
 run_notebook:
 	@echo "Ejecutando notebook Jupyter..."
