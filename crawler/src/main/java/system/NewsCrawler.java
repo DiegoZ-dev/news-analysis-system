@@ -81,7 +81,6 @@ public class NewsCrawler {
 								loadMoreButton);
 						loadMoreButton.click();
 						logger.info("Haciendo clic en el botón 'Cargar más'. Click número: {}", clickCount + 1);
-
 						wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".loading-spinner")));
 					} catch (Exception e) {
 						logger.info("No se encontró el botón 'Cargar más'. Finalizando la carga de resultados.");
