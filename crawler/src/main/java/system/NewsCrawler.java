@@ -2,15 +2,20 @@ package system;
 
 import java.io.FileWriter;
 import java.io.IOException;
+
+import java.util.List;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import java.time.Duration;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -19,6 +24,9 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,17 +60,18 @@ public class NewsCrawler {
 			Path filePath = Paths.get(csvFolder, csvFile).toAbsolutePath().normalize();
 			logger.info("El archivo se guardará en: {}", filePath);
 
-			try (CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath.toString()))) {
-				driver.get(url);
-
+            // Preparar el archivo CSV para escritura
+            try (CSVWriter csvWriter = new CSVWriter(new FileWriter(filePath.toString()))) {
+                // Navegar a la página
+                logger.info("Conectandose a la página");
+                driver.get(url);
 				String[] headers = { "titulo", "link", "cuerpo" };
 				csvWriter.writeNext(headers);
 				logger.info("Añadiendo los headers: '{}' al archivo {}", headers, csvFile);
-
 				WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 				int maxClicks = 1000;
-
-				for (int clickCount = 0; clickCount < maxClicks; clickCount++) {
+                boolean exist = true;
+				for (int clickCount = 0; clickCount < maxClicks && exist; clickCount++) {
 					try {
 						// Espera explícita para encontrar el botón y asegurarse de que esté visible y
 						// clickeable
@@ -76,7 +85,7 @@ public class NewsCrawler {
 						wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".loading-spinner")));
 					} catch (Exception e) {
 						logger.info("No se encontró el botón 'Cargar más'. Finalizando la carga de resultados.");
-						break;
+						exist=false;
 					}
 				}
 
@@ -108,9 +117,14 @@ public class NewsCrawler {
 				logger.info("Datos guardados en {}", filePath);
 			}
 		} catch (IOException e) {
-			logger.error("Error al escribir en el archivo CSV", e);
-		} finally {
-			driver.quit();
-		}
-	}
+      logger.error("Error al escribir/abrir en el archivo CSV");
+    } catch (TimeoutException time) {
+      logger.error("Se agotó el tiempo de espera del servidor.");
+    } catch (StaleElementReferenceException e) {
+      logger.error("El botón se movió de lugar o no se alcanzó a presionar el botón con el tiempo disponible para cargar el botón");
+    } finally {
+      // Cerrar el navegador
+      driver.quit();
+    }
+  }
 }
