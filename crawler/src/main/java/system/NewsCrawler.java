@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Locale;
 import java.util.Vector;
 
 import org.jsoup.Jsoup;
@@ -73,10 +72,8 @@ public class NewsCrawler {
 				boolean exist = true;
 				for (int clickCount = 0; clickCount < maxClicks && exist; clickCount++) {
 					try {
-						WebElement loadMoreButton = wait.until(ExpectedConditions
-								.elementToBeClickable(By.cssSelector("button.com-button.--secondary")));
-						((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);",
-								loadMoreButton);
+						WebElement loadMoreButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.com-button.--secondary")));
+						((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);",loadMoreButton);
 						loadMoreButton.click();
 						logger.info("Haciendo clic en el botón 'Cargar más'. Click número: {}", clickCount + 1);
 
@@ -92,7 +89,7 @@ public class NewsCrawler {
 
 				int newsCount = 0;
 				Vector<String[]> datos = new Vector<>(1000, 1000);
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MMMM-yyyy", new Locale("es", "ES"));
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MMMM-yyyy");
 
 				for (Element article : articlesGames) {
 					if (article.select("span.badge.--sixxs.--arial.com-label.--exclusive-ln").isEmpty()) {
@@ -109,8 +106,7 @@ public class NewsCrawler {
 						String[] fechaAFormatearA = fechaAFormatear.split(" de ");
 
 						if (fechaAFormatearA.length == 3) {
-							String fechaFormateada = fechaAFormatearA[0] + "-" + fechaAFormatearA[1] + "-"
-									+ fechaAFormatearA[2];
+							String fechaFormateada = fechaAFormatearA[0] + "-" + fechaAFormatearA[1] + "-"+ fechaAFormatearA[2];
 
 							try {
 								LocalDate fecha = LocalDate.parse(fechaFormateada, formatter);
@@ -137,7 +133,6 @@ public class NewsCrawler {
 		} catch (Exception e) {
 			logger.error("Error durante la ejecución: ", e);
 		} finally {
-			driver.close();
 			driver.quit();
 		}
 	}
