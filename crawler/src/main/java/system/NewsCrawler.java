@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Vector;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -70,6 +69,7 @@ public class NewsCrawler {
       } else {
         CSVReader leer = new CSVReader(new FileReader(filePath.toString()));
         datosAlmacenados = leer.readAll();
+        datosAlmacenados.removeFirst();
         leer.close();
         existsFile = true;
         logger.info("El archivo ya existe. Se almacenan los datos en un arreglo.");
@@ -85,9 +85,9 @@ public class NewsCrawler {
         logger.info("Añadiendo los headers: '{}' al archivo {}", headers, csvFile);
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        int maxClicks = 0;
+        int maxClicks = 1000;
         boolean exist = true;
-        for (int clickCount = 0; clickCount < maxClicks && exist; clickCount++) {
+        for (int clickCount = 0; (clickCount < maxClicks) && exist; clickCount++) {
           try {
             WebElement loadMoreButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.com-button.--secondary")));
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", loadMoreButton);
@@ -151,10 +151,8 @@ public class NewsCrawler {
 
         logger.info("Añadiendo todas las noticias obtenidas al archivo");
         if (existsFile) {
-          for (String[] datoS : datosNuevos) {
-            datos.addFirst(datoS);
-          }
-          csvWriter.writeAll(datos);
+          for (String[] datoS : datosNuevos) datosAlmacenados.addFirst(datoS);
+          csvWriter.writeAll(datosAlmacenados);
         } else {
           csvWriter.writeAll(datos);
         }
