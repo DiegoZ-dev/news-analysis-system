@@ -202,11 +202,12 @@
 *.tar.gz
 *.rar
 
-# Data Filees #
+# Data Files #
 data/*.csv
 data/*.crc
 data/**/*.csv
 data/**/*.crc
+data/raw/**
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 */hs_err_pid*
