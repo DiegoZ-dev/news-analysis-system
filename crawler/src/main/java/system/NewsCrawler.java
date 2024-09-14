@@ -43,6 +43,8 @@ public class NewsCrawler {
     String csvFile = "news.csv";
     List<String[]> datosAlmacenados = new Vector<String[]>(1000, 1000);
     boolean existsFile = false;
+    int cantNoticiasIniciales = 0;
+    int cantNoticiasFinales = 0;
 
     WebDriverManager.chromedriver().driverVersion("128").setup();
     ChromeOptions options = new ChromeOptions();
@@ -70,6 +72,7 @@ public class NewsCrawler {
         CSVReader leer = new CSVReader(new FileReader(filePath.toString()));
         datosAlmacenados = leer.readAll();
         datosAlmacenados.removeFirst();
+        cantNoticiasIniciales = datosAlmacenados.size();
         leer.close();
         existsFile = true;
         logger.info("El archivo ya existe. Se almacenan los datos en un arreglo.");
@@ -110,53 +113,66 @@ public class NewsCrawler {
         Iterator<Element> articles = articlesGames.iterator();
         boolean parar = false;
         while (articles.hasNext() && !parar) {
-          Element article = articles.next();
-          if (article.select("span.badge.--sixxs.--arial.com-label.--exclusive-ln").isEmpty()) {
-            Elements txtLink = article.select("h2.com-title.--font-primary.--l.--font-medium a.com-link");
-            String link = "https://www.lanacion.com.ar" + txtLink.attr("href");
+            Element article = articles.next();
+            if (article.select("span.badge.--sixxs.--arial.com-label.--exclusive-ln").isEmpty()) {
+                Elements txtLink = article.select("h2.com-title.--font-primary.--l.--font-medium a.com-link");
+                String link = "https://www.lanacion.com.ar" + txtLink.attr("href");
 
-            logger.info("Noticia #{} - Entrando a la noticia del link {}", ++newsCount, link);
-            Document news = Jsoup.connect(link).get();
+                logger.info("Noticia #{} - Entrando a la noticia del link {}", ++newsCount, link);
+                Document news = Jsoup.connect(link).get();
 
-            String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text();
-            String fechaAFormatear = news.select("time.com-date").attr("datetime");
-            String cuerpo = news.select("p.com-paragraph.--s").text();
-            String[] fechaAFormatearA = fechaAFormatear.split(" de ");
+                String title = news.select("h1.com-title.--font-primary.--sixxl.--font-extra").text();
+                String fechaAFormatear = news.select("time.com-date").attr("datetime");
+                String cuerpo = news.select("p.com-paragraph.--s").text();
+                String[] fechaAFormatearA = fechaAFormatear.split(" de ");
 
-            if (fechaAFormatearA.length == 3) {
-              String fechaFormateada = fechaAFormatearA[0] + "-" + fechaAFormatearA[1] + "-" + fechaAFormatearA[2];
+                if (fechaAFormatearA.length == 3) {
+                    String fechaFormateada = fechaAFormatearA[0] + "-" + fechaAFormatearA[1] + "-" + fechaAFormatearA[2];
 
-              try {
-                String[] primeraNoticia = datosAlmacenados.get(1);
-                LocalDate fecha = LocalDate.parse(fechaFormateada, formatter);
-                String[] bDatos = { title, fecha.toString(), link, cuerpo };
-                if (existsFile && !igual(primeraNoticia, bDatos)) { // Si el archivo existe y no es igual a la primera noticia
-                  datosNuevos.add(bDatos);
-                }else if(existsFile && igual(primeraNoticia, bDatos)){
-                  parar=true;
-                }else if (!existsFile) { // Si el archivo no existe
-                  datos.add(bDatos);
+                    try {
+                        LocalDate fecha = LocalDate.parse(fechaFormateada, formatter);
+                        String[] nuevaNoticia = { title, fecha.toString(), link, cuerpo };
+
+                        // Comparar con todas las noticias almacenadas
+                        boolean noticiaDuplicada = datosAlmacenados.stream().anyMatch(noticia -> igual(noticia, nuevaNoticia));
+
+                        if (!noticiaDuplicada) {
+                            // Añadir la noticia a la lista de nuevas noticias
+                            datosNuevos.add(nuevaNoticia);
+                        } else {
+                            logger.info("Noticia duplicada, se ya se obtuvieron todas las noticias nuevas, deteniendo el scraping.");
+                            parar = true;  // Detener al encontrar una noticia ya existente
+                        }
+
+                    } catch (DateTimeParseException e) {
+                        logger.error("Error al parsear la fecha: {}", e.getMessage());
+                    }
+                } else {
+                    logger.warn("Formato de fecha inesperado: {}", fechaAFormatear);
                 }
-                logger.info("Añadiendo los datos al arreglo.");
-              } catch (DateTimeParseException e) {
-                logger.error("Error al parsear la fecha: {}", e.getMessage());
-              }
             } else {
-              logger.warn("Formato de fecha inesperado: {}", fechaAFormatear);
+                logger.info("Se detectó una noticia exclusiva para miembros. Se saltea la noticia.");
             }
-          } else {
-            logger.info("Se detectó una noticia exclusiva para miembros. Se saltea la noticia.");
-          }
         }
 
+        // Guardar las noticias recolectadas
         logger.info("Añadiendo todas las noticias obtenidas al archivo");
+
         if (existsFile) {
-          for (String[] datoS : datosNuevos) datosAlmacenados.addFirst(datoS);
-          csvWriter.writeAll(datosAlmacenados);
+            // Insertar nuevas noticias al principio de los datos almacenados
+            datosAlmacenados.addAll(0, datosNuevos);  // Añadir al inicio de la lista de noticias almacenadas
+            csvWriter.writeAll(datosAlmacenados);     // Guardar todo en el archivo
         } else {
-          csvWriter.writeAll(datos);
+            csvWriter.writeAll(datosNuevos);  // Si no existe archivo previo, escribir solo las nuevas noticias
         }
+        
+        cantNoticiasFinales = datosAlmacenados.size();
+        
+        logger.info("Cantidad de noticias al inicio: {}", cantNoticiasIniciales);
+        logger.info("Cantidad de noticias después del crawling: {}", cantNoticiasFinales);
+        
         logger.info("Datos guardados en {}", filePath);
+
       }
     } catch (IOException e) {
       logger.error("Error al escribir/abrir en el archivo CSV", e);
