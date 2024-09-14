@@ -108,7 +108,6 @@ public class NewsCrawler {
         Elements articlesGames = doc.select("div.row-gap-tablet-3 section.mod-description");
 
         int newsCount = 0;
-        List<String[]> datos = new Vector<String[]>(1000, 1000);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MMMM-yyyy");
         Iterator<Element> articles = articlesGames.iterator();
         boolean parar = false;
@@ -162,15 +161,15 @@ public class NewsCrawler {
             // Insertar nuevas noticias al principio de los datos almacenados
             datosAlmacenados.addAll(0, datosNuevos);  // Añadir al inicio de la lista de noticias almacenadas
             csvWriter.writeAll(datosAlmacenados);     // Guardar todo en el archivo
+            cantNoticiasFinales = datosAlmacenados.size();
         } else {
             csvWriter.writeAll(datosNuevos);  // Si no existe archivo previo, escribir solo las nuevas noticias
+            cantNoticiasFinales = datosNuevos.size();
         }
-        
-        cantNoticiasFinales = datosAlmacenados.size();
-        
+
         logger.info("Cantidad de noticias al inicio: {}", cantNoticiasIniciales);
         logger.info("Cantidad de noticias después del crawling: {}", cantNoticiasFinales);
-        
+
         logger.info("Datos guardados en {}", filePath);
 
       }
