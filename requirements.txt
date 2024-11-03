@@ -1,3 +1,5 @@
 pyspark
 textblob
 pandas
+seaborn
+setuptools
